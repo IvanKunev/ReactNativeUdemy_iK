@@ -10,4 +10,7 @@ npm-debug.*
 web-build/
 
 # macOS
+/blog/node_modules
+/restaurant-app/node_modules
+/rn-starter/node_modules
 .DS_Store
