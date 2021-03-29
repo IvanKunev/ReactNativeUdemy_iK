@@ -1,50 +1,71 @@
-import React, { useContext } from 'react';
-import {View, Text, StyleSheet, FlatList, Button, TouchableOpacity, Touchable} from 'react-native';
+import React, { useContext, useEffect } from 'react';
+import { View, StyleSheet, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Context } from '../context/BlogContext';
-import {Feather} from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 
-const IndexScreen = ({ navigation }) =>{
-    const {state, deleteBlogPost} = useContext(Context);
-    return(
-        
-        <View> 
-            <FlatList 
-            data={state} 
-            keyExtractor={(blogPost) => blogPost.title}
-            renderItem={({ item }) =>{
-                return(
-                <TouchableOpacity onPress={() => navigation.navigate('Show', {id: item.id})}>
-                 <View style={styles.row}>
-                    <Text style={styles.title}>{item.title} - {item.id}</Text>
-                    <TouchableOpacity onPress={() => deleteBlogPost(item.id)}>
-                      <Feather style={styles.icon} name="trash"/>
-                    </TouchableOpacity>
-                 </View>
-                </TouchableOpacity>
-                );
-            }}
+//hooks is function that add-in some additional functionality to function component
+const IndexScreen = ({ navigation }) => {
+    const { state, deleteBlogPost, getBlogPosts } = useContext(Context);
+    //useEffect is props that make sure we just run the code one time.. 
+    //..when the app start re-render
+    useEffect(()=>{
+        getBlogPosts();
+        const listener = navigation.addListener('didFocus', ()=>{
+            getBlogPosts();
+        });
+        return()=>{
+            listener.remove();
+        };
+    }, []);
+    //empty array is to make arrow function run exactly one time
+
+    return (
+        <View>
+            
+            <FlatList
+                data={state}
+                keyExtractor={blogPosts => blogPosts.title}
+                renderItem={({ item }) => {
+                    return (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Show', { id: item.id })}
+                        >
+                            <View style={styles.row}>
+                                <Text styles={styles.title}>{item.title} - {item.id}</Text>
+                                <TouchableOpacity
+                                    onPress={() => deleteBlogPost(item.id)}
+                                >
+                                    <Feather style={styles.icon} name='trash' />
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
+                    )
+                }}
             />
         </View>
-    );
-};
 
-IndexScreen.navigationOptions = ({ navigation }) =>{
+    )
+}
+
+IndexScreen.navigationOptions = ({ navigation }) => {
     return {
-        headerRight: () => (
-          <TouchableOpacity onPress={() => navigation.navigate('Create')}>
-            <Feather style={styles.iconPlus} name="plus" size={30} />
-          </TouchableOpacity>
-        ),
-      };
-    };
+        headerRight:()=>(
+            <TouchableOpacity
+                onPress={() => navigation.navigate('Create')}
+            >
+                <Feather name='plus' size={30} />
+            </TouchableOpacity>
+        )
+    }
+}
 
-const styles = StyleSheet.create({
-    row:{
+styles = StyleSheet.create({
+    row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingVertical: 15,
+        paddingVertical: 20,
         paddingHorizontal: 10,
-        borderTopWidth: 1,
+        borderBottomWidth: 1,
         borderColor: 'grey'
     },
     title: {
@@ -52,10 +73,7 @@ const styles = StyleSheet.create({
     },
     icon: {
         fontSize: 24
-    },
-    iconPlus:{
-        marginRight: 10
     }
-});
+})
 
-export default IndexScreen;
+export default IndexScreen
